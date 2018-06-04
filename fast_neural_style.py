@@ -7,6 +7,8 @@ import chainer
 from chainer import training
 from chainer.training import extensions
 
+from chainer.links import caffe as chainer_caffe
+
 from model import ImageTransformer
 from updater import StyleUpdater, display_image
 from dataset import SuperImageDataset
@@ -26,7 +28,7 @@ def main():
     parser.add_argument('--output_channel', type=int, default=3, help='# of output image channels')
     parser.add_argument('--tanh_constant', type=float, default=150, help='Constant for output of ImageTransformer')
     parser.add_argument('--instance_normalization', type=str2bool, default=True, help='Use InstanceNormalization if True')
-    parser.add_argument('--model_path', default='models/VGG_ILSVRC_19_layers.pkl', help='Path for pretrained model')
+    parser.add_argument('--model_path', default='models/VGG_ILSVRC_19_layers.caffemodel', help='Path for pretrained model(caffe model)')
 
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate for Adam')
     parser.add_argument('--n_iterations', type=int, default=40000, help='# of iterations for training')
@@ -64,8 +66,7 @@ def main():
     # Set up ImageTransformer & VGG
     print('Create & Init models ...')
     G = ImageTransformer(args.filter_num, args.output_channel, args.tanh_constant, args.instance_normalization)
-    with open(args.model_path, 'rb') as f:
-        D = pickle.load(f)
+    D = chainer_caffe.CaffeFunction(args.model_path)
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
         G.to_gpu()                               # Copy the model to the GPU

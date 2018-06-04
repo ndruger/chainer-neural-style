@@ -71,7 +71,7 @@ class InstanceNormalization(link.Link):
         self.add_param('beta', nc, dtype=dtype)
         initializers.init_weight(self.beta.data, initializers.Zero())
 
-    def __call__(self, x, test=True):
+    def __call__(self, x):
         n, c, h, w = x.shape
         assert(c == self.nc)
         if n != self.prev_batch:
@@ -94,9 +94,9 @@ class ResidualBlock(chainer.Chain):
             b2=BN(nc)
         )
 
-    def __call__(self, x, test):
-        h = F.relu(self.b1(self.c1(x), test=test))
-        h = self.b2(self.c2(h), test=test)
+    def __call__(self, x):
+        h = F.relu(self.b1(self.c1(x)))
+        h = self.b2(self.c2(h))
         
         return h + x
 
@@ -123,17 +123,17 @@ class ImageTransformer(chainer.Chain):
             b5=BN(feature_map_nc)
         )
 
-    def __call__(self, x, test=False):
-        h = F.relu(self.b1(self.c1(x), test=test))
-        h = F.relu(self.b2(self.c2(h), test=test))
-        h = F.relu(self.b3(self.c3(h), test=test))
-        h = self.r1(h, test=test)
-        h = self.r2(h, test=test)
-        h = self.r3(h, test=test)
-        h = self.r4(h, test=test)
-        h = self.r5(h, test=test)
-        h = F.relu(self.b4(self.d1(h), test=test))
-        h = F.relu(self.b5(self.d2(h), test=test))
+    def __call__(self, x):
+        h = F.relu(self.b1(self.c1(x)))
+        h = F.relu(self.b2(self.c2(h)))
+        h = F.relu(self.b3(self.c3(h)))
+        h = self.r1(h)
+        h = self.r2(h)
+        h = self.r3(h)
+        h = self.r4(h)
+        h = self.r5(h)
+        h = F.relu(self.b4(self.d1(h)))
+        h = F.relu(self.b5(self.d2(h)))
         y = self.d3(h)
 
         return F.tanh(y) * self.tanh_constant

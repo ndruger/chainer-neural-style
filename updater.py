@@ -19,9 +19,9 @@ def display_image(G, valset, dst, device):
 
         idx = np.random.randint(0, len(valset))
         img = valset.get_example(idx)
-        input_var = Variable(chainer.dataset.concat_examples([img], device), volatile='on')
+        input_var = Variable(chainer.dataset.concat_examples([img], device))
 
-        out_var = G(input_var, test=True)
+        out_var = G(input_var)
         out = np.squeeze(chainer.cuda.to_cpu(out_var.data))
         out_img = im_deprocess_vgg(out, dtype=np.uint8)
 
@@ -41,14 +41,13 @@ class StyleUpdater(chainer.training.StandardUpdater):
         
         print('Extract style feature from {} ...\n'.format(self.args.style_image_path))
         style_image = im_preprocess_vgg(imread(self.args.style_image_path), load_size=self.args.style_load_size, dtype=np.float32)
-        style_image_var = Variable(chainer.dataset.concat_examples([style_image], self.args.gpu), volatile='on')
+        style_image_var = Variable(chainer.dataset.concat_examples([style_image], self.args.gpu))
         style_features = extract({'data': style_image_var}, self.D, self.args.style_layers)
         self.grams = {}
         for key, value in style_features.items():
             gram_feature = gram(value[0])
             _, w, h = gram_feature.shape
             gram_feature = F.broadcast_to(gram_feature, (self.args.batch_size, w, h))
-            gram_feature.volatile = 'off'
             self.grams[key] = gram_feature
     
         super(StyleUpdater, self).__init__(*args, **kwargs)
@@ -71,14 +70,11 @@ class StyleUpdater(chainer.training.StandardUpdater):
     
     def update_core(self):
         batch = self.get_iterator('main').next()
-        input_var = Variable(self.converter(batch, self.device), volatile='on')
+        input_var = Variable(self.converter(batch, self.device))
 
         content_features = extract({'data': input_var}, self.D, self.args.content_layers)
         content_features = {key:value[0] for key, value in content_features.items()}
-        for _, value in content_features.items():
-            value.volatile = 'off'
         
-        input_var.volatile = 'off'
         output_var = self.G(input_var)
         ouput_features = extract({'data': output_var}, self.D, self.layers)
     
