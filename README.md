@@ -1,4 +1,7 @@
 # chainer neural-style & fast-neural-style
+
+<b>This repogitory is fork of https://github.com/wuhuikai/chainer-neural-style for specific use.</b>
+
 Chainer implementation of [A Neural Algorithm of Artistic Style](http://arxiv.org/abs/1508.06576)
 and [Perceptual Losses for Real-Time Style Transfer and Super-Resolution](http://cs.stanford.edu/people/jcjohns/eccv16/). 
 
