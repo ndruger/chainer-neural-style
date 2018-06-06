@@ -87,12 +87,12 @@ class InstanceNormalization(link.Link):
 class ResidualBlock(chainer.Chain):
     def __init__(self, nc, stride=1, ksize=3, instance_normalization=True, w_init=None):
         BN = InstanceNormalization if instance_normalization else L.BatchNormalization
-        super(ResidualBlock, self).__init__(
-            c1=L.Convolution2D(None, nc, ksize=ksize, stride=stride, pad=1, initialW=w_init),
-            c2=L.Convolution2D(None, nc, ksize=ksize, stride=stride, pad=1, initialW=w_init),
-            b1=BN(nc),
-            b2=BN(nc)
-        )
+        super(ResidualBlock, self).__init__()
+        with self.init_scope():
+            self.c1=L.Convolution2D(None, nc, ksize=ksize, stride=stride, pad=1, initialW=w_init)
+            self.c2=L.Convolution2D(None, nc, ksize=ksize, stride=stride, pad=1, initialW=w_init)
+            self.b1=BN(nc)
+            self.b2=BN(nc)
 
     def __call__(self, x):
         h = F.relu(self.b1(self.c1(x)))
