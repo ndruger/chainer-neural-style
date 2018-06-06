@@ -104,24 +104,24 @@ class ImageTransformer(chainer.Chain):
     def __init__(self, feature_map_nc, output_nc, tanh_constant, instance_normalization=True, w_init=None):
         self.tanh_constant = tanh_constant
         BN = InstanceNormalization if instance_normalization else L.BatchNormalization
-        super(ImageTransformer, self).__init__(
-            c1=L.Convolution2D(None, feature_map_nc, ksize=9, stride=1, pad=4, initialW=w_init),
-            c2=L.Convolution2D(None, 2*feature_map_nc, ksize=3, stride=2, pad=1, initialW=w_init),
-            c3=L.Convolution2D(None, 4*feature_map_nc, ksize=3,stride=2, pad=1, initialW=w_init),
-            r1=ResidualBlock(4*feature_map_nc, instance_normalization=instance_normalization, w_init=w_init),
-            r2=ResidualBlock(4*feature_map_nc, instance_normalization=instance_normalization, w_init=w_init),
-            r3=ResidualBlock(4*feature_map_nc, instance_normalization=instance_normalization, w_init=w_init),
-            r4=ResidualBlock(4*feature_map_nc, instance_normalization=instance_normalization, w_init=w_init),
-            r5=ResidualBlock(4*feature_map_nc, instance_normalization=instance_normalization, w_init=w_init),
-            d1=L.Deconvolution2D(None, 2*feature_map_nc, ksize=4, stride=2, pad=1, initialW=w_init),
-            d2=L.Deconvolution2D(None, feature_map_nc, ksize=4, stride=2, pad=1, initialW=w_init),
-            d3=L.Convolution2D(None, output_nc, ksize=9, stride=1, pad=4, initialW=w_init),
-            b1=BN(feature_map_nc),
-            b2=BN(2*feature_map_nc),
-            b3=BN(4*feature_map_nc),
-            b4=BN(2*feature_map_nc),
-            b5=BN(feature_map_nc)
-        )
+        super(ImageTransformer, self).__init__()
+        with self.init_scope():
+            self.c1 = L.Convolution2D(None, feature_map_nc, ksize=9, stride=1, pad=4, initialW=w_init)
+            self.c2 = L.Convolution2D(None, 2*feature_map_nc, ksize=3, stride=2, pad=1, initialW=w_init)
+            self.c3 = L.Convolution2D(None, 4*feature_map_nc, ksize=3,stride=2, pad=1, initialW=w_init)
+            self.r1 = ResidualBlock(4*feature_map_nc, instance_normalization=instance_normalization, w_init=w_init)
+            self.r2 = ResidualBlock(4*feature_map_nc, instance_normalization=instance_normalization, w_init=w_init)
+            self.r3 = ResidualBlock(4*feature_map_nc, instance_normalization=instance_normalization, w_init=w_init)
+            self.r4 = ResidualBlock(4*feature_map_nc, instance_normalization=instance_normalization, w_init=w_init)
+            self.r5 = ResidualBlock(4*feature_map_nc, instance_normalization=instance_normalization, w_init=w_init)
+            self.d1 = L.Deconvolution2D(None, 2*feature_map_nc, ksize=4, stride=2, pad=1, initialW=w_init)
+            self.d2 = L.Deconvolution2D(None, feature_map_nc, ksize=4, stride=2, pad=1, initialW=w_init)
+            self.d3 = L.Convolution2D(None, output_nc, ksize=9, stride=1, pad=4, initialW=w_init)
+            self.b1 = BN(feature_map_nc)
+            self.b2 = BN(2*feature_map_nc)
+            self.b3 = BN(4*feature_map_nc)
+            self.b4 = BN(2*feature_map_nc)
+            self.b5 = BN(feature_map_nc)
 
     def __call__(self, x):
         h = F.relu(self.b1(self.c1(x)))
